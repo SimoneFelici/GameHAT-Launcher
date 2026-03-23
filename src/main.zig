@@ -1,32 +1,43 @@
-const rl = @import("raylib");
+const sdl3 = @import("sdl3");
+const std = @import("std");
 
-pub fn main() anyerror!void {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const screenWidth = 800;
-    const screenHeight = 450;
+const fps = 60;
+const screen_width = 640;
+const screen_height = 480;
 
-    rl.initWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
-    defer rl.closeWindow(); // Close window and OpenGL context
+pub fn main() !void {
+    defer sdl3.shutdown();
 
-    rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
+    // Initialize SDL with subsystems you need here.
+    const init_flags = sdl3.InitFlags{ .video = true };
+    try sdl3.init(init_flags);
+    defer sdl3.quit(init_flags);
 
-    // Main game loop
-    while (!rl.windowShouldClose()) { // Detect window close button or ESC key
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
+    // Initial window setup.
+    const window = try sdl3.video.Window.init("Hello SDL3", screen_width, screen_height, .{});
+    defer window.deinit();
 
-        // Draw
-        //----------------------------------------------------------------------------------
-        rl.beginDrawing();
-        defer rl.endDrawing();
+    // Useful for limiting the FPS and getting the delta time.
+    var fps_capper = sdl3.extras.FramerateCapper(f32){ .mode = .{ .limited = fps } };
 
-        rl.clearBackground(.white);
+    var quit = false;
+    while (!quit) {
 
-        rl.drawText("Congrats! You created your first window!", 190, 200, 20, .light_gray);
-        //----------------------------------------------------------------------------------
+        // Delay to limit the FPS, returned delta time not needed.
+        const dt = fps_capper.delay();
+        _ = dt;
+
+        // Update logic.
+        const surface = try window.getSurface();
+        try surface.fillRect(null, surface.mapRgb(128, 30, 255));
+        try window.updateSurface();
+
+        // Event logic.
+        while (sdl3.events.poll()) |event|
+            switch (event) {
+                .quit => quit = true,
+                .terminating => quit = true,
+                else => {},
+            };
     }
 }
