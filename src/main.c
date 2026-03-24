@@ -40,6 +40,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;
     }
+
     if (event->type == SDL_EVENT_KEY_DOWN) {
         to_redraw = true;
     }
@@ -48,11 +49,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    static int init_frames = 5;
-    if (!to_redraw && init_frames <= 0)
+    if (!to_redraw)
         return SDL_APP_CONTINUE;
-
-    if (init_frames > 0) init_frames--;
 
     FPS_Counter();
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
