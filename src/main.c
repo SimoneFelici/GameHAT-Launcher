@@ -32,7 +32,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
-static bool to_redraw = false;
+static bool to_redraw = true;
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
@@ -50,7 +50,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     if (!to_redraw)
         return SDL_APP_CONTINUE;
     FPS_Counter();
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
