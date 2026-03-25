@@ -10,6 +10,7 @@ static SDL_Renderer *renderer = NULL;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -22,7 +23,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if(!SDL_SetRenderVSync(renderer, 2))
+    if(!SDL_SetRenderVSync(renderer, 1))
     {
         SDL_Log( "Couldn't enable VSync: %s", SDL_GetError() );
         return SDL_APP_FAILURE;
@@ -33,7 +34,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
-static bool to_redraw = true;
+static bool to_draw = true;
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
@@ -41,15 +42,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         return SDL_APP_SUCCESS;
     }
 
-    if (event->type == SDL_EVENT_KEY_DOWN) {
-        to_redraw = true;
-    }
+    if (event->type == SDL_EVENT_KEY_DOWN)
+        to_draw = true;
+
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    if (!to_redraw)
+    if (!to_draw)
         return SDL_APP_CONTINUE;
 
     FPS_Counter();
@@ -57,7 +58,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    to_redraw = false;
+    to_draw = false;
 
     return SDL_APP_CONTINUE;
 }
