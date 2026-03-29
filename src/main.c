@@ -56,9 +56,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     if (!to_draw)
         return SDL_APP_CONTINUE;
 
-    FPS_Counter();
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
+    FPS_Counter(renderer);
     SDL_RenderPresent(renderer);
 
     to_draw = false;
