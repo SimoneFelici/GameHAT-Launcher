@@ -23,9 +23,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     if(!SDL_SetRenderVSync(renderer, 1))
-    {
         SDL_Log( "Couldn't enable VSync: %s", SDL_GetError() );
-    }
+
+    if (!SDL_HideCursor())
+        SDL_Log( "Couldn't hide cursor: %s", SDL_GetError() );
+
 
     SDL_SetRenderLogicalPresentation(renderer, 480, 320, SDL_LOGICAL_PRESENTATION_DISABLED);
 
