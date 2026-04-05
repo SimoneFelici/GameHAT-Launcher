@@ -2,32 +2,34 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_scancode.h>
 
 int main(int argc, char *argv[])
 {
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
-    int tot_games = 0;
-    char *games_path = "/usr/local/games";
-    char **games;
+    Games games;
+    games.path = "/usr/local/games";
+    games.current = 0;
 
-    if (!(games = SDL_GlobDirectory(games_path, NULL, SDL_GLOB_CASEINSENSITIVE, &tot_games))) {
+    if (!(games.list = SDL_GlobDirectory(games.path, NULL, SDL_GLOB_CASEINSENSITIVE, &games.num))) {
         SDL_Log("Couldn't read games directory: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
+        return 1;
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
+        return 1;
     }
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", 480, 320, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
+        return 1;
     }
 
     if (!SDL_SetRenderVSync(renderer, 1))
@@ -35,12 +37,13 @@ int main(int argc, char *argv[])
     if (!SDL_HideCursor())
         SDL_Log("Couldn't hide cursor: %s", SDL_GetError());
 
-    SDL_SetRenderLogicalPresentation(renderer, 480, 320, SDL_LOGICAL_PRESENTATION_DISABLED);
+    SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_DISABLED);
 
     // MAIN
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     FPS_Counter(renderer);
+    printGames(renderer, &games);
     SDL_RenderPresent(renderer);
 
     SDL_Event event;
@@ -48,19 +51,35 @@ int main(int argc, char *argv[])
         if (event.type == SDL_EVENT_QUIT)
             break;
 
+        if (event.type == SDL_EVENT_KEY_DOWN) {
+            switch (event.key.scancode) {
+                case SDL_SCANCODE_UP:
+                    if (games.current > 0) games.current--;
+                    break;
+                case SDL_SCANCODE_DOWN:
+                    if (games.current < games.num - 1) games.current++;
+                    break;
+                case SDL_SCANCODE_RETURN:
+                    break;
+                default:
+                    break;
+            }
+        }
+
         if (event.type == SDL_EVENT_KEY_DOWN ||
             event.type == SDL_EVENT_WINDOW_RESIZED)
-        {
+            {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             FPS_Counter(renderer);
+            printGames(renderer, &games);
             SDL_RenderPresent(renderer);
         }
     }
 
+    SDL_free(games.list);
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    SDL_free(games);
-    return (SDL_APP_SUCCESS);
 }

@@ -1,0 +1,42 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&gpio>;
+        __overlay__ {
+            gamehat_pins: gamehat_pins {
+                brcm,pins = <4 5 6 12 13 16 18 19 20 21 23 26>;
+                brcm,function = <0 0 0 0 0 0 0 0 0 0 0 0>;
+                brcm,pull = <2 2 2 2 2 2 2 2 2 2 2 2>;
+            };
+        };
+    };
+
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+            gamehat_keys: gamehat-keys {
+                compatible = "gpio-keys";
+                pinctrl-names = "default";
+                pinctrl-0 = <&gamehat_pins>;
+                status = "okay";
+
+                up     { gpios = <&gpio 5  1>; linux,code = <103>; label = "Up";     };
+                down   { gpios = <&gpio 6  1>; linux,code = <108>; label = "Down";   };
+                left   { gpios = <&gpio 13 1>; linux,code = <105>; label = "Left";   };
+                right  { gpios = <&gpio 19 1>; linux,code = <106>; label = "Right";  };
+                a      { gpios = <&gpio 26 1>; linux,code = <44>;  label = "A";      };
+                b      { gpios = <&gpio 12 1>; linux,code = <45>;  label = "B";      };
+                x      { gpios = <&gpio 16 1>; linux,code = <46>;  label = "X";      };
+                y      { gpios = <&gpio 20 1>; linux,code = <47>;  label = "Y";      };
+                start  { gpios = <&gpio 21 1>; linux,code = <28>;  label = "Start";  };
+                select { gpios = <&gpio 4  1>; linux,code = <14>;  label = "Select"; };
+                tl     { gpios = <&gpio 18 1>; linux,code = <16>;  label = "TL";     };
+                tr     { gpios = <&gpio 23 1>; linux,code = <18>;  label = "TR";     };
+            };
+        };
+    };
+};
