@@ -1,10 +1,21 @@
 #include "GameHAT-Launcher.h"
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_init.h>
 
 int main(int argc, char *argv[])
 {
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
+
+    int tot_games = 0;
+    char *games_path = "/usr/local/games";
+    char **games;
+
+    if (!(games = SDL_GlobDirectory(games_path, NULL, SDL_GLOB_CASEINSENSITIVE, &tot_games))) {
+        SDL_Log("Couldn't read games directory: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
@@ -38,9 +49,7 @@ int main(int argc, char *argv[])
             break;
 
         if (event.type == SDL_EVENT_KEY_DOWN ||
-            event.type == SDL_EVENT_WINDOW_RESIZED ||
-            event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
-            event.type == SDL_EVENT_WINDOW_EXPOSED)
+            event.type == SDL_EVENT_WINDOW_RESIZED)
         {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
@@ -52,4 +61,6 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    SDL_free(games);
+    return (SDL_APP_SUCCESS);
 }
