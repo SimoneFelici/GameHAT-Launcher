@@ -7,11 +7,11 @@ int main()
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
-    int tty_fd = -1;
-    if (access("/dev/tty1", W_OK) == 0) {
-        tty_fd = open("/dev/tty1", O_RDWR);
-        if (tty_fd >= 0)
-            ioctl(tty_fd, KDSKBMODE, K_OFF);
+    int tty_fd = open("/dev/tty1", O_RDWR);
+    SDL_Log("open tty1: fd=%d err=%s", tty_fd, tty_fd < 0 ? strerror(errno) : "ok");
+    if (tty_fd >= 0) {
+        int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
+        SDL_Log("KDSKBMODE: ret=%d err=%s", ret, ret < 0 ? strerror(errno) : "ok");
     }
 
     Games games;

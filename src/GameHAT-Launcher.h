@@ -7,6 +7,8 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 #define WIDTH 480.0f
 #define HEIGHT 320.0f
