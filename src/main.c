@@ -17,10 +17,10 @@ int main()
 
     int tty_fd = open(tty_path, O_RDWR);
     fprintf(stderr, "tty: %s fd=%d\n", tty_path, tty_fd);
-    if (tty_fd >= 0) {
-        int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
-        fprintf(stderr, "KDSKBMODE: ret=%d err=%s\n", ret, ret < 0 ? strerror(errno) : "ok");
-    }
+    // if (tty_fd >= 0) {
+    //     int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
+    //     fprintf(stderr, "KDSKBMODE: ret=%d err=%s\n", ret, ret < 0 ? strerror(errno) : "ok");
+    // }
 
     Games games;
     games.path = "/usr/local/games";
@@ -36,6 +36,9 @@ int main()
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
+
+    if (tty_fd >= 0)
+        ioctl(tty_fd, KDSKBMODE, K_OFF);
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
