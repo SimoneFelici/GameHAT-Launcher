@@ -1,18 +1,20 @@
 #include "GameHAT-Launcher.h"
 
-
 int main()
 {
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
-    int tty_fd = open("/dev/tty1", O_RDWR);
-    SDL_Log("open tty1: fd=%d err=%s", tty_fd, tty_fd < 0 ? strerror(errno) : "ok");
-    if (tty_fd >= 0) {
-        int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
-        SDL_Log("KDSKBMODE: ret=%d err=%s", ret, ret < 0 ? strerror(errno) : "ok");
+    FILE *f = fopen("/sys/class/tty/tty0/active", "r");
+    char tty_path[32] = "/dev/tty0";
+    if (f) {
+        char name[16];
+        if (fscanf(f, "%15s", name) == 1)
+            SDL_snprintf(tty_path, sizeof(tty_path), "/dev/%s", name);
+        fclose(f);
     }
+    int tty_fd = open(tty_path, O_RDWR);
 
     Games games;
     games.path = "/usr/local/games";
