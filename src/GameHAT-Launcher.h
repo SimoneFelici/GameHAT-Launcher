@@ -4,8 +4,8 @@
 #include <SDL3/SDL_init.h>
 #include <dirent.h>
 
-#define WIDTH 480.0f
-#define HEIGHT 320.0f
+#define WIDTH 640.0f
+#define HEIGHT 480.0f
 
 typedef struct Games {
     int num;
