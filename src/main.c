@@ -1,5 +1,5 @@
 #include "GameHAT-Launcher.h"
-#include <SDL3/SDL_events.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
@@ -41,6 +41,11 @@ int main(int argc, char *argv[])
     FPS_Counter(renderer);
     printGames(renderer, &games);
     SDL_RenderPresent(renderer);
+
+    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+    FILE *f = fopen("/tmp/debug.txt", "w");
+    fprintf(f, "Display: %dx%d\n", mode->w, mode->h);
+    fclose(f);
 
     SDL_Event event;
     while (SDL_WaitEvent(&event)) {
