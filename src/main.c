@@ -1,6 +1,6 @@
 #include "GameHAT-Launcher.h"
 #include <SDL3/SDL_events.h>
-#include <stdio.h>
+#include <SDL3/SDL_stdinc.h>
 
 int main()
 {
@@ -25,7 +25,7 @@ int main()
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return 1;
     }
@@ -38,11 +38,6 @@ int main()
     SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     // MAIN
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(renderer);
-    FPS_Counter(renderer);
-    printGames(renderer, &games);
-    SDL_RenderPresent(renderer);
 
     SDL_Event event;
     while (SDL_WaitEvent(&event)) {
@@ -71,7 +66,7 @@ int main()
                     break;
             }
         }
-        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN)
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED)
         {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
