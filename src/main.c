@@ -5,6 +5,12 @@ int main()
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+        return 1;
+    }
+
+    // REMOVE TTY INPUT
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
     FILE *f = fopen("/sys/class/tty/tty0/active", "r");
     char tty_path[32] = "/dev/tty0";
@@ -16,12 +22,10 @@ int main()
     }
 
     int tty_fd = open(tty_path, O_RDWR);
-    fprintf(stderr, "tty: %s fd=%d\n", tty_path, tty_fd);
-    // if (tty_fd >= 0) {
-    //     int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
-    //     fprintf(stderr, "KDSKBMODE: ret=%d err=%s\n", ret, ret < 0 ? strerror(errno) : "ok");
-    // }
+    if (tty_fd >= 0)
+        ioctl(tty_fd, KDSKBMODE, K_OFF);
 
+    // GET GAMES LIST
     Games games;
     games.path = "/usr/local/games";
     games.current = 0;
@@ -31,14 +35,6 @@ int main()
         SDL_Log("Couldn't read games directory: %s", SDL_GetError());
         return 1;
     }
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-        return 1;
-    }
-
-    if (tty_fd >= 0)
-        ioctl(tty_fd, KDSKBMODE, K_OFF);
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
