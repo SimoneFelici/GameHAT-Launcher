@@ -2,7 +2,7 @@
 #include <SDL3/SDL_events.h>
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+int main()
 {
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     Games games;
     games.path = "/usr/local/games";
     games.current = 0;
+    games.scroll = 0;
 
     if (!(games.list = SDL_GlobDirectory(games.path, NULL, SDL_GLOB_CASEINSENSITIVE, &games.num))) {
         SDL_Log("Couldn't read games directory: %s", SDL_GetError());
