@@ -62,7 +62,7 @@ int main()
             break;
 
         if (event.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Log("%d", event.key.scancode);
+            // SDL_Log("%d", event.key.scancode);
             switch (event.key.scancode) {
                 case SDL_SCANCODE_UP:
                     if (games.current > 0) {
