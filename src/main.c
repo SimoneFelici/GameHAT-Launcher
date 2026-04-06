@@ -1,9 +1,4 @@
 #include "GameHAT-Launcher.h"
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_filesystem.h>
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_scancode.h>
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +22,7 @@ int main(int argc, char *argv[])
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return 1;
     }
