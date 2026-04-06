@@ -16,9 +16,9 @@ void FPS_Counter(SDL_Renderer *renderer) {
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_SetRenderScale(renderer, 2.0f, 2.0f);
+    // SDL_SetRenderScale(renderer, 2.0f, 2.0f);
     SDL_RenderDebugText(renderer, 5, 5, fps_text);
-    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
+    // SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     // SDL_Log("%s\n", fps_text);
 }
 
@@ -33,7 +33,7 @@ void printGames(SDL_Renderer *renderer, Games *games) {
     if (end > games->num)
         end = games->num;
 
-    float scale = 3.0f;
+    float scale = 2.0f;
     float char_w = 8.0f;
     float spacing = 24.0f;
 
