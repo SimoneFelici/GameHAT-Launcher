@@ -39,6 +39,12 @@ int main()
 
     SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
+    FPS_Counter(renderer);
+    printGames(renderer, &games);
+    SDL_RenderPresent(renderer);
+
     // MAIN
 
     SDL_Event event;
