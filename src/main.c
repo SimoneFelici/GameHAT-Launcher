@@ -1,4 +1,5 @@
 #include "GameHAT-Launcher.h"
+#include <SDL3/SDL_events.h>
 
 int main(int argc, char *argv[])
 {
@@ -62,7 +63,8 @@ int main(int argc, char *argv[])
         }
 
         if (event.type == SDL_EVENT_KEY_DOWN ||
-            event.type == SDL_EVENT_WINDOW_RESIZED)
+            event.type == SDL_EVENT_WINDOW_RESIZED ||
+            event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN)
             {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
