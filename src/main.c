@@ -15,8 +15,11 @@ int main()
         fclose(f);
     }
     int tty_fd = open(tty_path, O_RDWR);
-    if (tty_fd >= 0)
-        ioctl(tty_fd, KDSKBMODE, K_OFF);
+    SDL_Log("tty: %s fd=%d", tty_path, tty_fd);
+    if (tty_fd >= 0) {
+        int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
+        SDL_Log("KDSKBMODE: ret=%d err=%s", ret, ret < 0 ? strerror(errno) : "ok");
+    }
 
     Games games;
     games.path = "/usr/local/games";

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #define WIDTH 480.0f
 #define HEIGHT 320.0f
