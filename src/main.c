@@ -15,6 +15,8 @@ int main()
         fclose(f);
     }
     int tty_fd = open(tty_path, O_RDWR);
+    if (tty_fd >= 0)
+        ioctl(tty_fd, KDSKBMODE, K_OFF);
 
     Games games;
     games.path = "/usr/local/games";
