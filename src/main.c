@@ -8,8 +8,8 @@ int main()
 
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
     int tty_fd = -1;
-    if (access("/dev/tty0", W_OK) == 0) {
-        tty_fd = open("/dev/tty0", O_RDWR);
+    if (access("/dev/tty1", W_OK) == 0) {
+        tty_fd = open("/dev/tty1", O_RDWR);
         if (tty_fd >= 0)
             ioctl(tty_fd, KDSKBMODE, K_OFF);
     }
