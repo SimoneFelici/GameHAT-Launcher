@@ -14,11 +14,12 @@ int main()
             SDL_snprintf(tty_path, sizeof(tty_path), "/dev/%s", name);
         fclose(f);
     }
+
     int tty_fd = open(tty_path, O_RDWR);
-    SDL_Log("tty: %s fd=%d", tty_path, tty_fd);
+    fprintf(stderr, "tty: %s fd=%d\n", tty_path, tty_fd);
     if (tty_fd >= 0) {
         int ret = ioctl(tty_fd, KDSKBMODE, K_OFF);
-        SDL_Log("KDSKBMODE: ret=%d err=%s", ret, ret < 0 ? strerror(errno) : "ok");
+        fprintf(stderr, "KDSKBMODE: ret=%d err=%s\n", ret, ret < 0 ? strerror(errno) : "ok");
     }
 
     Games games;
