@@ -1,13 +1,15 @@
 #include "GameHAT-Launcher.h"
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_video.h>
+
 
 int main()
 {
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
+
+    // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
+    int evdev_fd = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
+    if (evdev_fd >= 0)
+        ioctl(evdev_fd, EVIOCGRAB, 1);
 
     Games games;
     games.path = "/usr/local/games";
@@ -83,6 +85,11 @@ int main()
             printGames(renderer, &games);
             SDL_RenderPresent(renderer);
         }
+    }
+
+    if (evdev_fd >= 0) {
+        ioctl(evdev_fd, EVIOCGRAB, 0);
+        close(evdev_fd);
     }
 
     SDL_free(games.list);
