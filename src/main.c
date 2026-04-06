@@ -1,6 +1,8 @@
 #include "GameHAT-Launcher.h"
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_video.h>
 
 int main()
 {
@@ -25,7 +27,7 @@ int main()
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_INPUT_FOCUS, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return 1;
     }
@@ -45,6 +47,7 @@ int main()
             break;
 
         if (event.type == SDL_EVENT_KEY_DOWN) {
+            SDL_Log("%d", event.key.scancode);
             switch (event.key.scancode) {
                 case SDL_SCANCODE_UP:
                     if (games.current > 0) {
