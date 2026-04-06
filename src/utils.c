@@ -16,29 +16,23 @@ void FPS_Counter(SDL_Renderer *renderer) {
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    // SDL_SetRenderScale(renderer, 2.0f, 2.0f);
     SDL_RenderDebugText(renderer, 5, 5, fps_text);
-    // SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     // SDL_Log("%s\n", fps_text);
 }
 
 void printGames(SDL_Renderer *renderer, Games *games) {
-    int max_visible = 5;
-    
-    int start = 0;
-    if (games->current >= max_visible)
-        start = games->current - max_visible + 1;
+    int start = games->scroll;
+    int end = start + MAX_VISIBLE;
+    float scale = 2.0f;
+    float char_w = 8.0f;
+    float char_h = 8.0f;
+    float spacing = 24.0f;
 
-    int end = start + max_visible;
     if (end > games->num)
         end = games->num;
 
-    float scale = 2.0f;
-    float char_w = 8.0f;
-    float spacing = 24.0f;
-
     int visible = end - start;
-    float total_h = visible * spacing - (spacing - 8.0f);
+    float total_h = visible * spacing - (spacing - char_h);
     float start_y = (HEIGHT / scale - total_h) / 2.0f;
 
     SDL_SetRenderScale(renderer, scale, scale);
@@ -50,7 +44,6 @@ void printGames(SDL_Renderer *renderer, Games *games) {
 
         if (i == games->current)
             SDL_SetRenderDrawColor(renderer, 255, 0, 144, SDL_ALPHA_OPAQUE);
-            // SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
         else
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 

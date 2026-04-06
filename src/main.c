@@ -51,10 +51,18 @@ int main(int argc, char *argv[])
         if (event.type == SDL_EVENT_KEY_DOWN) {
             switch (event.key.scancode) {
                 case SDL_SCANCODE_UP:
-                    if (games.current > 0) games.current--;
+                    if (games.current > 0) {
+                        games.current--;
+                        if (games.current < games.scroll)
+                            games.scroll = games.current;
+                    }
                     break;
                 case SDL_SCANCODE_DOWN:
-                    if (games.current < games.num - 1) games.current++;
+                    if (games.current < games.num - 1) {
+                        games.current++;
+                        if (games.current >= games.scroll + MAX_VISIBLE)
+                            games.scroll = games.current - MAX_VISIBLE + 1;
+                    }
                     break;
                 case SDL_SCANCODE_RETURN:
                     break;

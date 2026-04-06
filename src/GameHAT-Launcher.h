@@ -6,10 +6,12 @@
 
 #define WIDTH 480.0f
 #define HEIGHT 320.0f
+#define MAX_VISIBLE 5
 
 typedef struct Games {
     int num;
     int current;
+    int scroll;
     char **list;
     char *path;
 } Games;
