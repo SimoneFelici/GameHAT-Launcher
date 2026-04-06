@@ -12,18 +12,21 @@ int main()
 
     // REMOVE TTY INPUT
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
-    FILE *f = fopen("/sys/class/tty/tty0/active", "r");
-    char tty_path[32] = "/dev/tty0";
-    if (f) {
-        char name[16];
-        if (fscanf(f, "%15s", name) == 1)
-            SDL_snprintf(tty_path, sizeof(tty_path), "/dev/%s", name);
-        fclose(f);
+    int tty_fd = -1;
+    if (!SDL_getenv("DISPLAY") && !SDL_getenv("WAYLAND_DISPLAY")) {
+        char *active = (char *)SDL_LoadFile("/sys/class/tty/tty0/active", NULL);
+        char tty_path[32] = "/dev/tty0";
+        if (active) {
+            // Rimuovi newline
+            char *nl = SDL_strchr(active, '\n');
+            if (nl) *nl = '\0';
+            SDL_snprintf(tty_path, sizeof(tty_path), "/dev/%s", active);
+            SDL_free(active);
+        }
+        tty_fd = open(tty_path, O_RDWR);
+        if (tty_fd >= 0)
+            ioctl(tty_fd, KDSKBMODE, K_OFF);
     }
-
-    int tty_fd = open(tty_path, O_RDWR);
-    if (tty_fd >= 0)
-        ioctl(tty_fd, KDSKBMODE, K_OFF);
 
     // GET GAMES LIST
     Games games;
@@ -82,6 +85,7 @@ int main()
                     }
                     break;
                 case SDL_SCANCODE_RETURN:
+                    startGame(&games);
                     break;
                 default:
                     break;

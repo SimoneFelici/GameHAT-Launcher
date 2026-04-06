@@ -1,4 +1,17 @@
 #include "GameHAT-Launcher.h"
+#include <SDL3/SDL_stdinc.h>
+
+int startGame(Games *games)
+{
+    char *game_path;
+    size_t len = SDL_strlen(games->path) + SDL_strlen(games->list[games->current]) + 2;
+    game_path = (char *)SDL_calloc(1, len);
+    SDL_snprintf(game_path, len, "%s/%s", games->path, games->list[games->current]);
+    SDL_Log("Game path: %s", game_path);
+
+    SDL_free(game_path);
+    return(0);
+}
 
 void FPS_Counter(SDL_Renderer *renderer) {
     static Uint64 last = 0;
