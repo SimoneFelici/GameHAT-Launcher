@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     if (!SDL_HideCursor())
         SDL_Log("Couldn't hide cursor: %s", SDL_GetError());
 
-    SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_DISABLED);
+    SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     // MAIN
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
@@ -41,11 +41,6 @@ int main(int argc, char *argv[])
     FPS_Counter(renderer);
     printGames(renderer, &games);
     SDL_RenderPresent(renderer);
-
-    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
-    FILE *f = fopen("/tmp/debug.txt", "w");
-    fprintf(f, "Display: %dx%d\n", mode->w, mode->h);
-    fclose(f);
 
     SDL_Event event;
     while (SDL_WaitEvent(&event)) {
