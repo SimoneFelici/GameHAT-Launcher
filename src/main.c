@@ -7,9 +7,12 @@ int main()
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
     // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
-    int evdev_fd = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
-    if (evdev_fd >= 0)
-        ioctl(evdev_fd, EVIOCGRAB, 1);
+    int tty_fd = -1;
+    if (access("/dev/tty0", W_OK) == 0) {
+        tty_fd = open("/dev/tty0", O_RDWR);
+        if (tty_fd >= 0)
+            ioctl(tty_fd, KDSKBMODE, K_OFF);
+    }
 
     Games games;
     games.path = "/usr/local/games";
@@ -87,9 +90,9 @@ int main()
         }
     }
 
-    if (evdev_fd >= 0) {
-        ioctl(evdev_fd, EVIOCGRAB, 0);
-        close(evdev_fd);
+    if (tty_fd >= 0) {
+        ioctl(tty_fd, KDSKBMODE, K_UNICODE);
+        close(tty_fd);
     }
 
     SDL_free(games.list);
