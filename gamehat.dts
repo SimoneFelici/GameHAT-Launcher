@@ -32,8 +32,8 @@
                 b      { gpios = <&gpio 12 1>; linux,code = <45>;  label = "B";      };
                 x      { gpios = <&gpio 16 1>; linux,code = <46>;  label = "X";      };
                 y      { gpios = <&gpio 20 1>; linux,code = <47>;  label = "Y";      };
-                start  { gpios = <&gpio 21 1>; linux,code = <28>;  label = "Start";  };
-                select { gpios = <&gpio 4  1>; linux,code = <14>;  label = "Select"; };
+                start  { gpios = <&gpio 21 1>; linux,code = <1>;  label = "Start";  };
+                select { gpios = <&gpio 4  1>; linux,code = <28>; label = "Select"; };
                 tl     { gpios = <&gpio 18 1>; linux,code = <16>;  label = "TL";     };
                 tr     { gpios = <&gpio 23 1>; linux,code = <18>;  label = "TR";     };
             };
