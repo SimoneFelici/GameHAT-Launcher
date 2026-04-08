@@ -1,4 +1,5 @@
 #include "GameHAT-Launcher.h"
+#include <SDL3/SDL_process.h>
 #include <SDL3/SDL_stdinc.h>
 
 int startGame(Games *games)
@@ -7,6 +8,15 @@ int startGame(Games *games)
     size_t len = SDL_strlen(games->path) + SDL_strlen(games->list[games->current]) + 2;
     game_path = (char *)SDL_calloc(1, len);
     SDL_snprintf(game_path, len, "%s/%s", games->path, games->list[games->current]);
+    const char *args[] = {game_path, NULL};
+
+    SDL_Process *process = SDL_CreateProcess(args, false);
+    SDL_PropertiesID props = SDL_GetProcessProperties(process);
+    Sint64 pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, -1);
+
+    if (pid != 0)
+        SDL_WaitProcess(process, true, NULL);
+
     SDL_Log("Game path: %s", game_path);
 
     SDL_free(game_path);
