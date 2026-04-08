@@ -31,13 +31,9 @@ int main()
     // GET GAMES LIST
     Games games;
     games.path = "/usr/local/games";
-    games.current = 0;
-    games.scroll = 0;
 
-    if (!(games.list = SDL_GlobDirectory(games.path, NULL, SDL_GLOB_CASEINSENSITIVE, &games.num))) {
-        SDL_Log("Couldn't read games directory: %s", SDL_GetError());
-        return 1;
-    }
+    if (!reloadFolder(&games))
+        return(1);
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
@@ -84,6 +80,9 @@ int main()
                             games.scroll = games.current - MAX_VISIBLE + 1;
                     }
                     break;
+                case SDL_SCANCODE_E:
+                        reloadFolder(&games);
+                        break;
                 case SDL_SCANCODE_RETURN:
                     startGame(&games);
                     break;

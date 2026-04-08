@@ -26,5 +26,6 @@ typedef struct Games {
 // utils.c
 
 int startGame(Games *games);
+int reloadFolder(Games *games);
 void FPS_Counter(SDL_Renderer *renderer);
 void printGames(SDL_Renderer *renderer, Games *games);

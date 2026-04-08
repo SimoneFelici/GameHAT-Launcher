@@ -13,6 +13,19 @@ int startGame(Games *games)
     return(0);
 }
 
+int reloadFolder(Games *games)
+{
+    games->current = 0;
+    games->scroll = 0;
+
+    if (!(games->list = SDL_GlobDirectory(games->path, NULL, SDL_GLOB_CASEINSENSITIVE, &games->num))) {
+        SDL_Log("Couldn't read games directory: %s", SDL_GetError());
+        return 0;
+    }
+
+    return(1);
+}
+
 void FPS_Counter(SDL_Renderer *renderer) {
     static Uint64 last = 0;
     static int frames = 0;
