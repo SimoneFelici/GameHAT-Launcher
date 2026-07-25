@@ -1,0 +1,1 @@
+SUBSYSTEM=="input", ATTRS{name}=="vc4-hdmi", ENV{ID_INPUT}="", ENV{ID_INPUT_MOUSE}=""
