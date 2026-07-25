@@ -4,19 +4,22 @@
 
 int startGame(Games* games)
 {
+    if (games->num <= 0)
+        return (0);
+
     char* game_path;
     size_t len = SDL_strlen(games->path) + SDL_strlen(games->list[games->current]) + 2;
     game_path = (char*)SDL_calloc(1, len);
     SDL_snprintf(game_path, len, "%s/%s", games->path, games->list[games->current]);
     const char* args[] = { game_path, NULL };
 
-    SDL_Log("Game path: %s", game_path);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Game path: %s", game_path);
 
     SDL_Process* process = SDL_CreateProcess(args, false);
     SDL_free(game_path);
 
     if (!process) {
-        SDL_Log("Couldn't start game: %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't start game: %s", SDL_GetError());
         return (0);
     }
 
@@ -31,7 +34,7 @@ int reloadFolder(Games* games)
     char** list = SDL_GlobDirectory(games->path, NULL, SDL_GLOB_CASEINSENSITIVE, &num);
 
     if (!list) {
-        SDL_Log("Couldn't read games directory: %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't read games directory: %s", SDL_GetError());
         return 0;
     }
 
@@ -50,6 +53,8 @@ void FPS_Counter(SDL_Renderer* renderer)
     static char fps_text[16] = "FPS: 0";
 
     Uint64 now = SDL_GetPerformanceCounter();
+    if (last == 0)
+        last = now;
     frames++;
 
     double elapsed = (double)(now - last) / SDL_GetPerformanceFrequency();
@@ -61,7 +66,6 @@ void FPS_Counter(SDL_Renderer* renderer)
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderDebugText(renderer, 5, 5, fps_text);
-    // SDL_Log("%s\n", fps_text);
 }
 
 void printGames(SDL_Renderer* renderer, Games* games)

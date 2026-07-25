@@ -75,10 +75,11 @@ int main()
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "=== START ===");
     // GET GAMES LIST
     Games games = { };
     games.path = "/usr/local/games";
@@ -89,22 +90,21 @@ int main()
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_INPUT_FOCUS, &window, &renderer)) {
-        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window/renderer: %s", SDL_GetError());
         return 1;
     }
 
     if (!SDL_SetRenderVSync(renderer, 1))
-        SDL_Log("Couldn't enable VSync: %s", SDL_GetError());
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Couldn't enable VSync: %s", SDL_GetError());
     if (!SDL_HideCursor())
-        SDL_Log("Couldn't hide cursor: %s", SDL_GetError());
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Couldn't hide cursor: %s", SDL_GetError());
 
     SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     redraw(renderer, &games);
 
     // MAIN
-
     SDL_Gamepad* pad = NULL;
     SDL_Event event;
     while (SDL_WaitEvent(&event)) {
