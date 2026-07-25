@@ -10,35 +10,17 @@ int main()
         return 1;
     }
 
-    // REMOVE TTY INPUT
-    // wait for the issue to be resolved: https://github.com/libsdl-org/sdl/issues/15166 
-    int tty_fd = -1;
-    if (!SDL_getenv("DISPLAY") && !SDL_getenv("WAYLAND_DISPLAY")) {
-        char *active = (char *)SDL_LoadFile("/sys/class/tty/tty0/active", NULL);
-        char tty_path[32] = "/dev/tty0";
-        if (active) {
-            // Rimuovi newline
-            char *nl = SDL_strchr(active, '\n');
-            if (nl) *nl = '\0';
-            SDL_snprintf(tty_path, sizeof(tty_path), "/dev/%s", active);
-            SDL_free(active);
-        }
-        tty_fd = open(tty_path, O_RDWR);
-        if (tty_fd >= 0)
-            ioctl(tty_fd, KDSKBMODE, K_OFF);
-    }
-
     // GET GAMES LIST
     Games games;
     games.path = "/usr/local/games";
 
     if (!reloadFolder(&games))
-        return(1);
+        return (1);
 
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
+    SDL_Window* window = NULL;
+    SDL_Renderer* renderer = NULL;
 
-    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_KEYBOARD_GRABBED, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Launcher", WIDTH, HEIGHT, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return 1;
     }
@@ -66,43 +48,37 @@ int main()
         if (event.type == SDL_EVENT_KEY_DOWN) {
             // SDL_Log("%d", event.key.scancode);
             switch (event.key.scancode) {
-                case SDL_SCANCODE_UP:
-                    if (games.current > 0) {
-                        games.current--;
-                        if (games.current < games.scroll)
-                            games.scroll = games.current;
-                    }
-                    break;
-                case SDL_SCANCODE_DOWN:
-                    if (games.current < games.num - 1) {
-                        games.current++;
-                        if (games.current >= games.scroll + MAX_VISIBLE)
-                            games.scroll = games.current - MAX_VISIBLE + 1;
-                    }
-                    break;
-                case SDL_SCANCODE_E:
-                        reloadFolder(&games);
-                        break;
-                case SDL_SCANCODE_RETURN:
-                    startGame(&games);
-                    break;
-                default:
-                    break;
+            case SDL_SCANCODE_UP:
+                if (games.current > 0) {
+                    games.current--;
+                    if (games.current < games.scroll)
+                        games.scroll = games.current;
+                }
+                break;
+            case SDL_SCANCODE_DOWN:
+                if (games.current < games.num - 1) {
+                    games.current++;
+                    if (games.current >= games.scroll + MAX_VISIBLE)
+                        games.scroll = games.current - MAX_VISIBLE + 1;
+                }
+                break;
+            case SDL_SCANCODE_E:
+                reloadFolder(&games);
+                break;
+            case SDL_SCANCODE_RETURN:
+                startGame(&games);
+                break;
+            default:
+                break;
             }
         }
-        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED)
-        {
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             FPS_Counter(renderer);
             printGames(renderer, &games);
             SDL_RenderPresent(renderer);
         }
-    }
-
-    if (tty_fd >= 0) {
-        ioctl(tty_fd, KDSKBMODE, K_UNICODE);
-        close(tty_fd);
     }
 
     SDL_free(games.list);

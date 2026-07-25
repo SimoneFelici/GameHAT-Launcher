@@ -3,9 +3,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_init.h>
 #include <dirent.h>
-#include <linux/kd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
