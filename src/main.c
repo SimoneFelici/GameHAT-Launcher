@@ -5,13 +5,13 @@ int main()
     // INIT
     SDL_SetAppMetadata("GameHAT-Launcher", "v0.1", "com.eternalblue.gamehatlauncher");
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     // GET GAMES LIST
-    Games games;
+    Games games = { };
     games.path = "/usr/local/games";
 
     if (!reloadFolder(&games))
@@ -40,11 +40,51 @@ int main()
 
     // MAIN
 
+    SDL_Gamepad* pad = NULL;
     SDL_Event event;
     while (SDL_WaitEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT)
             break;
 
+        // Gamepad
+        if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
+            if (pad == NULL)
+                pad = SDL_OpenGamepad(event.gdevice.which);
+        }
+        if (event.type == SDL_EVENT_GAMEPAD_REMOVED) {
+            if (pad && SDL_GetGamepadID(pad) == event.gdevice.which) {
+                SDL_CloseGamepad(pad);
+                pad = NULL;
+            }
+        }
+        if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
+            switch (event.gbutton.button) {
+            case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                if (games.current > 0) {
+                    games.current--;
+                    if (games.current < games.scroll)
+                        games.scroll = games.current;
+                }
+                break;
+            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                if (games.current < games.num - 1) {
+                    games.current++;
+                    if (games.current >= games.scroll + MAX_VISIBLE)
+                        games.scroll = games.current - MAX_VISIBLE + 1;
+                }
+                break;
+            case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+                reloadFolder(&games);
+                break;
+            case SDL_GAMEPAD_BUTTON_SOUTH:
+                startGame(&games);
+                break;
+            default:
+                break;
+            }
+        }
+
+        // Keyboard
         if (event.type == SDL_EVENT_KEY_DOWN) {
             // SDL_Log("%d", event.key.scancode);
             switch (event.key.scancode) {
@@ -72,7 +112,7 @@ int main()
                 break;
             }
         }
-        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED) {
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
             FPS_Counter(renderer);
@@ -80,9 +120,9 @@ int main()
             SDL_RenderPresent(renderer);
         }
     }
-
+    if (pad)
+        SDL_CloseGamepad(pad);
     SDL_free(games.list);
-
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

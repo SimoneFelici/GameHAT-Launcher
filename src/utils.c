@@ -2,15 +2,15 @@
 #include <SDL3/SDL_process.h>
 #include <SDL3/SDL_stdinc.h>
 
-int startGame(Games *games)
+int startGame(Games* games)
 {
-    char *game_path;
+    char* game_path;
     size_t len = SDL_strlen(games->path) + SDL_strlen(games->list[games->current]) + 2;
-    game_path = (char *)SDL_calloc(1, len);
+    game_path = (char*)SDL_calloc(1, len);
     SDL_snprintf(game_path, len, "%s/%s", games->path, games->list[games->current]);
-    const char *args[] = {game_path, NULL};
+    const char* args[] = { game_path, NULL };
 
-    SDL_Process *process = SDL_CreateProcess(args, false);
+    SDL_Process* process = SDL_CreateProcess(args, false);
     SDL_PropertiesID props = SDL_GetProcessProperties(process);
     Sint64 pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, -1);
 
@@ -20,27 +20,33 @@ int startGame(Games *games)
     SDL_Log("Game path: %s", game_path);
 
     SDL_free(game_path);
-    return(0);
+    return (0);
 }
 
-int reloadFolder(Games *games)
+int reloadFolder(Games* games)
 {
-    games->current = 0;
-    games->scroll = 0;
+    int num;
+    char** list = SDL_GlobDirectory(games->path, NULL, SDL_GLOB_CASEINSENSITIVE, &num);
 
-    if (!(games->list = SDL_GlobDirectory(games->path, NULL, SDL_GLOB_CASEINSENSITIVE, &games->num))) {
+    if (!list) {
         SDL_Log("Couldn't read games directory: %s", SDL_GetError());
         return 0;
     }
 
-    return(1);
+    SDL_free(games->list);
+    games->list = list;
+    games->num = num;
+    games->current = 0;
+    games->scroll = 0;
+    return (1);
 }
 
-void FPS_Counter(SDL_Renderer *renderer) {
+void FPS_Counter(SDL_Renderer* renderer)
+{
     static Uint64 last = 0;
     static int frames = 0;
     static char fps_text[16] = "FPS: 0";
-    
+
     Uint64 now = SDL_GetPerformanceCounter();
     frames++;
 
@@ -56,7 +62,8 @@ void FPS_Counter(SDL_Renderer *renderer) {
     // SDL_Log("%s\n", fps_text);
 }
 
-void printGames(SDL_Renderer *renderer, Games *games) {
+void printGames(SDL_Renderer* renderer, Games* games)
+{
     int start = games->scroll;
     int end = start + MAX_VISIBLE;
     float scale = 2.0f;
