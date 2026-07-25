@@ -1,5 +1,74 @@
 #include "GameHAT-Launcher.h"
 
+static Action actionFromButton(Uint8 button)
+{
+    switch (button) {
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+        return (ACT_UP);
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+        return (ACT_DOWN);
+    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+        return (ACT_RELOAD);
+    case SDL_GAMEPAD_BUTTON_SOUTH:
+        return (ACT_START);
+    default:
+        return (ACT_NONE);
+    }
+}
+
+static Action actionFromKey(SDL_Scancode scancode)
+{
+    switch (scancode) {
+    case SDL_SCANCODE_UP:
+        return (ACT_UP);
+    case SDL_SCANCODE_DOWN:
+        return (ACT_DOWN);
+    case SDL_SCANCODE_E:
+        return (ACT_RELOAD);
+    case SDL_SCANCODE_RETURN:
+        return (ACT_START);
+    default:
+        return (ACT_NONE);
+    }
+}
+
+static void runAction(Games* games, Action action)
+{
+    switch (action) {
+    case ACT_UP:
+        if (games->current > 0) {
+            games->current--;
+            if (games->current < games->scroll)
+                games->scroll = games->current;
+        }
+        break;
+    case ACT_DOWN:
+        if (games->current < games->num - 1) {
+            games->current++;
+            if (games->current >= games->scroll + MAX_VISIBLE)
+                games->scroll = games->current - MAX_VISIBLE + 1;
+        }
+        break;
+    case ACT_RELOAD:
+        reloadFolder(games);
+        break;
+    case ACT_START:
+        startGame(games);
+        break;
+    default:
+        break;
+    }
+}
+
+static void redraw(SDL_Renderer* renderer, Games* games)
+{
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
+    FPS_Counter(renderer);
+    printGames(renderer, games);
+    SDL_RenderPresent(renderer);
+}
+
 int main()
 {
     // INIT
@@ -32,11 +101,7 @@ int main()
 
     SDL_SetRenderLogicalPresentation(renderer, WIDTH, HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(renderer);
-    FPS_Counter(renderer);
-    printGames(renderer, &games);
-    SDL_RenderPresent(renderer);
+    redraw(renderer, &games);
 
     // MAIN
 
@@ -45,6 +110,8 @@ int main()
     while (SDL_WaitEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT)
             break;
+
+        Action action = ACT_NONE;
 
         // Gamepad
         if (event.type == SDL_EVENT_GAMEPAD_ADDED) {
@@ -57,67 +124,17 @@ int main()
                 pad = NULL;
             }
         }
-        if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN) {
-            switch (event.gbutton.button) {
-            case SDL_GAMEPAD_BUTTON_DPAD_UP:
-                if (games.current > 0) {
-                    games.current--;
-                    if (games.current < games.scroll)
-                        games.scroll = games.current;
-                }
-                break;
-            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
-                if (games.current < games.num - 1) {
-                    games.current++;
-                    if (games.current >= games.scroll + MAX_VISIBLE)
-                        games.scroll = games.current - MAX_VISIBLE + 1;
-                }
-                break;
-            case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
-                reloadFolder(&games);
-                break;
-            case SDL_GAMEPAD_BUTTON_SOUTH:
-                startGame(&games);
-                break;
-            default:
-                break;
-            }
-        }
+        if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN)
+            action = actionFromButton(event.gbutton.button);
 
         // Keyboard
-        if (event.type == SDL_EVENT_KEY_DOWN) {
-            // SDL_Log("%d", event.key.scancode);
-            switch (event.key.scancode) {
-            case SDL_SCANCODE_UP:
-                if (games.current > 0) {
-                    games.current--;
-                    if (games.current < games.scroll)
-                        games.scroll = games.current;
-                }
-                break;
-            case SDL_SCANCODE_DOWN:
-                if (games.current < games.num - 1) {
-                    games.current++;
-                    if (games.current >= games.scroll + MAX_VISIBLE)
-                        games.scroll = games.current - MAX_VISIBLE + 1;
-                }
-                break;
-            case SDL_SCANCODE_E:
-                reloadFolder(&games);
-                break;
-            case SDL_SCANCODE_RETURN:
-                startGame(&games);
-                break;
-            default:
-                break;
-            }
-        }
+        if (event.type == SDL_EVENT_KEY_DOWN)
+            action = actionFromKey(event.key.scancode);
+
+        runAction(&games, action);
+
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN || event.type == SDL_EVENT_WINDOW_EXPOSED) {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(renderer);
-            FPS_Counter(renderer);
-            printGames(renderer, &games);
-            SDL_RenderPresent(renderer);
+            redraw(renderer, &games);
         }
     }
     if (pad)

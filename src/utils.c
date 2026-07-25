@@ -10,17 +10,19 @@ int startGame(Games* games)
     SDL_snprintf(game_path, len, "%s/%s", games->path, games->list[games->current]);
     const char* args[] = { game_path, NULL };
 
-    SDL_Process* process = SDL_CreateProcess(args, false);
-    SDL_PropertiesID props = SDL_GetProcessProperties(process);
-    Sint64 pid = SDL_GetNumberProperty(props, SDL_PROP_PROCESS_PID_NUMBER, -1);
-
-    if (pid != 0)
-        SDL_WaitProcess(process, true, NULL);
-
     SDL_Log("Game path: %s", game_path);
 
+    SDL_Process* process = SDL_CreateProcess(args, false);
     SDL_free(game_path);
-    return (0);
+
+    if (!process) {
+        SDL_Log("Couldn't start game: %s", SDL_GetError());
+        return (0);
+    }
+
+    SDL_WaitProcess(process, true, NULL);
+    SDL_DestroyProcess(process);
+    return (1);
 }
 
 int reloadFolder(Games* games)

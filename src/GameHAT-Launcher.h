@@ -20,6 +20,14 @@ typedef struct Games {
     char *path;
 } Games;
 
+typedef enum Action {
+    ACT_NONE,
+    ACT_UP,
+    ACT_DOWN,
+    ACT_RELOAD,
+    ACT_START
+} Action;
+
 // utils.c
 
 int startGame(Games *games);
