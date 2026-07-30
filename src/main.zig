@@ -1,32 +1,31 @@
+const std = @import("std");
 const rl = @import("raylib");
+const Config = @import("config.zig").Config;
 
-pub fn main() anyerror!void {
-    // Initialization
-    //--------------------------------------------------------------------------------------
+pub fn main(init: std.process.Init) anyerror!void {
+    const gpa = init.gpa;
+    const io = init.io;
+    const environ = init.environ_map;
+
     const screenWidth = 800;
     const screenHeight = 450;
 
-    rl.initWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
-    defer rl.closeWindow(); // Close window and OpenGL context
+    const config = Config.init(io, gpa, environ);
 
-    rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
+    rl.initWindow(screenWidth, screenHeight, "Game-Hat Launcher");
+    defer rl.closeWindow();
 
-    // Main game loop
-    while (!rl.windowShouldClose()) { // Detect window close button or ESC key
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
+    while (!rl.windowShouldClose()) {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(.white);
-
-        rl.drawText("Congrats! You created your first window!", 190, 200, 20, .light_gray);
-        //----------------------------------------------------------------------------------
+        rl.clearBackground(config.bg_color);
+        rl.drawText(
+            "Congrats! You created your first window!",
+            190,
+            200,
+            20,
+            config.txt_color,
+        );
     }
 }
