@@ -22,3 +22,14 @@ mkdir -p /sysroot/usr/include /sysroot/usr/lib/aarch64-linux-gnu
 cp -r /usr/include/* /sysroot/usr/include/
 cp -r /usr/lib/aarch64-linux-gnu/* /sysroot/usr/lib/aarch64-linux-gnu/
 ```
+
+```bash
+zig build gamehat -Dsysroot=<sysroot_path>
+
+scp zig-out/gamehat/GameHAT_Launcher zig-out/gamehat/libraylib.so <dietpi>:/tmp
+
+ssh dietpi
+
+cp /tmp/libraylib.so /usr/local/lib/
+cp /tmp/GameHAT_Launcher /usr/local/bin/
+```

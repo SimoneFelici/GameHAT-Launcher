@@ -3,7 +3,7 @@ const rl = @import("raylib");
 const Context = @import("context.zig").Context;
 
 pub fn main(init: std.process.Init) anyerror!void {
-    const font_size: f32 = 24;
+    var font_size: f32 = 48;
     const spacing: f32 = 5;
 
     var ctx: Context = .{
@@ -26,9 +26,12 @@ pub fn main(init: std.process.Init) anyerror!void {
 
     const monitor = rl.getCurrentMonitor();
     const screenW = rl.getMonitorWidth(monitor);
+    const screenH = rl.getMonitorHeight(monitor);
     const screenWidth: f32 = @floatFromInt(screenW);
+    const screenHeight: f32 = @floatFromInt(screenH);
     const font = try rl.getFontDefault();
 
+    font_size = @divExact((screenWidth + screenHeight), 20);
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
         defer rl.endDrawing();
