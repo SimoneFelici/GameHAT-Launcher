@@ -7,17 +7,21 @@ const DEFAULT_BG = rl.Color{ .r = 0x00, .g = 0x2b, .b = 0x36, .a = 255 };
 const DEFAULT_TXT = rl.Color{ .r = 0x83, .g = 0x94, .b = 0x96, .a = 255 };
 const DEFAULT_HG = rl.Color{ .r = 0xcb, .g = 0x4b, .b = 0x16, .a = 255 };
 const DEFAULT_GD = "/usr/local/games";
+const DEFAULT_MX = 5;
+const DEFAULT_SCALE = 10;
 
 pub const Config = struct {
     bg_color: rl.Color = DEFAULT_BG,
     txt_color: rl.Color = DEFAULT_TXT,
     hg_color: rl.Color = DEFAULT_HG,
     games_dir: []const u8 = DEFAULT_GD,
+    max_view: usize = DEFAULT_MX,
+    text_scale: f32 = DEFAULT_SCALE,
 };
 
 pub fn load(ctx: *Context) void {
     const contents = readFile(ctx) catch |err| {
-        std.debug.print("Config error {s}\n", .{@errorName(err)});
+        std.log.err("Config error {s}\n", .{@errorName(err)});
         return;
     };
     parse(ctx, contents);
@@ -35,12 +39,14 @@ fn readFile(ctx: *Context) ![]u8 {
 }
 
 fn parse(ctx: *Context, contents: []const u8) void {
-    const Key = enum { bg_color, txt_color, hg_color, games_dir };
+    const Key = enum { bg_color, txt_color, hg_color, games_dir, max_view, text_scale };
     const key_map = std.StaticStringMap(Key).initComptime(.{
         .{ "background_color", .bg_color },
         .{ "text_color", .txt_color },
         .{ "highlight_color", .hg_color },
         .{ "games_directory", .games_dir },
+        .{ "max_viewable_items", .max_view },
+        .{ "text_scale", .text_scale },
     });
 
     var lines = std.mem.splitScalar(u8, contents, '\n');
@@ -56,13 +62,15 @@ fn parse(ctx: *Context, contents: []const u8) void {
             .txt_color => ctx.config.txt_color = parseHexColor(value, DEFAULT_TXT),
             .hg_color => ctx.config.hg_color = parseHexColor(value, DEFAULT_HG),
             .games_dir => setGamesDir(&ctx.config.games_dir, ctx.io, value),
+            .max_view => ctx.config.max_view = parseMaxView(value),
+            .text_scale => ctx.config.text_scale = parseTextScale(value),
         }
     }
 }
 
 fn setGamesDir(games_dir: *[]const u8, io: std.Io, dir: []const u8) void {
     std.Io.Dir.accessAbsolute(io, dir, .{ .read = true, .execute = true }) catch {
-        std.debug.print("Games directory not accessible: '{s}'\n", .{dir});
+        std.log.err("Games directory not accessible: '{s}'\n", .{dir});
         return;
     };
     games_dir.* = dir;
@@ -70,11 +78,21 @@ fn setGamesDir(games_dir: *[]const u8, io: std.Io, dir: []const u8) void {
 
 fn parseHexColor(hex: []const u8, default: rl.Color) rl.Color {
     if (hex.len != 7 or hex[0] != '#') {
-        std.debug.print("Invalid hex code: '{s}'\n", .{hex});
+        std.log.err("Invalid hex code: '{s}'\n", .{hex});
         return default;
     }
     const red = std.fmt.parseInt(u8, hex[1..3], 16) catch return default;
     const green = std.fmt.parseInt(u8, hex[3..5], 16) catch return default;
     const blue = std.fmt.parseInt(u8, hex[5..7], 16) catch return default;
     return .{ .r = red, .g = green, .b = blue, .a = 255 };
+}
+
+fn parseMaxView(num: []const u8) usize {
+    const int = std.fmt.parseInt(usize, num, 10) catch return DEFAULT_MX;
+    return if (int > 0) int else DEFAULT_MX;
+}
+
+fn parseTextScale(num: []const u8) f32 {
+    const val = std.fmt.parseFloat(f32, num) catch return DEFAULT_SCALE;
+    return if (val > 0) val else DEFAULT_SCALE;
 }

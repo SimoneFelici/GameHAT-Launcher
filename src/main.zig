@@ -4,8 +4,6 @@ const Context = @import("context.zig").Context;
 
 pub fn main(init: std.process.Init) anyerror!void {
     const spacing: f32 = 5;
-    const text_scale: f32 = 10;
-    const max_view: usize = 5;
     var select: usize = 0;
     var start: usize = 0;
 
@@ -33,7 +31,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     const screenWidth: f32 = @floatFromInt(screenW);
     const screenHeight: f32 = @floatFromInt(screenH);
     const font = try rl.getFontDefault();
-    const font_size = @divTrunc(@min(screenWidth, screenHeight), text_scale);
+    const font_size = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
 
     while (!rl.windowShouldClose()) {
         if (ctx.games.items.len > 0) {
@@ -49,11 +47,11 @@ pub fn main(init: std.process.Init) anyerror!void {
 
             if (select < start) {
                 start = select;
-            } else if (select >= start + max_view) {
-                start = select - max_view + 1;
+            } else if (select >= start + config.max_view) {
+                start = select - config.max_view + 1;
             }
         }
-        const end = @min(start + max_view, ctx.games.items.len);
+        const end = @min(start + config.max_view, ctx.games.items.len);
 
         rl.beginDrawing();
         defer rl.endDrawing();
