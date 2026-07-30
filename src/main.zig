@@ -5,7 +5,7 @@ const Context = @import("context.zig").Context;
 pub fn main(init: std.process.Init) anyerror!void {
     const screenWidth = 800;
     const screenHeight = 450;
-    const font_size: f32 = 20;
+    const font_size: f32 = 24;
     const spacing: f32 = 2;
 
     var ctx: Context = .{
