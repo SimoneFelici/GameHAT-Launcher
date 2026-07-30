@@ -1,56 +1,47 @@
 const std = @import("std");
 const rl = @import("raylib");
 const known_folders = @import("known-folders");
+const Context = @import("context.zig").Context;
 
 const DEFAULT_BG = rl.Color{ .r = 0x00, .g = 0x2b, .b = 0x36, .a = 255 };
 const DEFAULT_TXT = rl.Color{ .r = 0x83, .g = 0x94, .b = 0x96, .a = 255 };
 const DEFAULT_HG = rl.Color{ .r = 0xcb, .g = 0x4b, .b = 0x16, .a = 255 };
+const DEFAULT_GD = "/usr/local/games";
 
 pub const Config = struct {
-    bg_color: rl.Color,
-    txt_color: rl.Color,
-    hg_color: rl.Color,
-    // games_dir: []u8,
-
-    pub fn default() Config {
-        return .{
-            .bg_color = DEFAULT_BG,
-            .txt_color = DEFAULT_TXT,
-            .hg_color = DEFAULT_HG,
-        };
-    }
-
-    pub fn init(io: std.Io, gpa: std.mem.Allocator, environ: *const std.process.Environ.Map) Config {
-        return loadFromFile(io, gpa, environ) catch |err| {
-            std.debug.print("Config error {s}\n", .{@errorName(err)});
-            return Config.default();
-        };
-    }
-
-    fn loadFromFile(io: std.Io, gpa: std.mem.Allocator, environ: *const std.process.Environ.Map) !Config {
-        const config_dir = try known_folders.getPath(io, gpa, environ, .roaming_configuration) orelse
-            return error.NoConfigDir;
-        defer gpa.free(config_dir);
-
-        const path = try std.fs.path.join(gpa, &.{ config_dir, "GameHat-Launcher", "config.txt" });
-        defer gpa.free(path);
-
-        var buf: [10240]u8 = undefined;
-        const contents = try std.Io.Dir.cwd().readFile(io, path, &buf);
-
-        return parseConfig(contents);
-    }
+    bg_color: rl.Color = DEFAULT_BG,
+    txt_color: rl.Color = DEFAULT_TXT,
+    hg_color: rl.Color = DEFAULT_HG,
+    games_dir: []const u8 = DEFAULT_GD,
 };
 
-fn parseConfig(contents: []const u8) Config {
-    const Key = enum { bg_color, txt_color, hg_color };
-    const key_map = std.StaticStringMap(Key).initComptime(.{
-        .{ "background", .bg_color },
-        .{ "text", .txt_color },
-        .{ "highlight", .hg_color },
-    });
+pub fn load(ctx: *Context) void {
+    const contents = readFile(ctx) catch |err| {
+        std.debug.print("Config error {s}\n", .{@errorName(err)});
+        return;
+    };
+    parse(ctx, contents);
+}
 
-    var config = Config.default();
+fn readFile(ctx: *Context) ![]u8 {
+    const config_dir = try known_folders.getPath(ctx.io, ctx.gpa, ctx.environ, .roaming_configuration) orelse
+        return error.NoConfigDir;
+    defer ctx.gpa.free(config_dir);
+
+    const path = try std.fs.path.join(ctx.gpa, &.{ config_dir, "GameHAT-Launcher", "config.txt" });
+    defer ctx.gpa.free(path);
+
+    return std.Io.Dir.cwd().readFile(ctx.io, path, &ctx.contents_buf);
+}
+
+fn parse(ctx: *Context, contents: []const u8) void {
+    const Key = enum { bg_color, txt_color, hg_color, games_dir };
+    const key_map = std.StaticStringMap(Key).initComptime(.{
+        .{ "background_color", .bg_color },
+        .{ "text_color", .txt_color },
+        .{ "highlight_color", .hg_color },
+        .{ "games_directory", .games_dir },
+    });
 
     var lines = std.mem.splitScalar(u8, contents, '\n');
     while (lines.next()) |line| {
@@ -61,13 +52,20 @@ fn parseConfig(contents: []const u8) Config {
 
         const k = key_map.get(key) orelse continue;
         switch (k) {
-            .bg_color => config.bg_color = parseHexColor(value, DEFAULT_BG),
-            .txt_color => config.txt_color = parseHexColor(value, DEFAULT_TXT),
-            .hg_color => config.hg_color = parseHexColor(value, DEFAULT_HG),
+            .bg_color => ctx.config.bg_color = parseHexColor(value, DEFAULT_BG),
+            .txt_color => ctx.config.txt_color = parseHexColor(value, DEFAULT_TXT),
+            .hg_color => ctx.config.hg_color = parseHexColor(value, DEFAULT_HG),
+            .games_dir => setGamesDir(&ctx.config.games_dir, ctx.io, value),
         }
     }
+}
 
-    return config;
+fn setGamesDir(games_dir: *[]const u8, io: std.Io, dir: []const u8) void {
+    std.Io.Dir.accessAbsolute(io, dir, .{ .read = true, .execute = true }) catch {
+        std.debug.print("Games directory not accessible: '{s}'\n", .{dir});
+        return;
+    };
+    games_dir.* = dir;
 }
 
 fn parseHexColor(hex: []const u8, default: rl.Color) rl.Color {
