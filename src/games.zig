@@ -41,7 +41,7 @@ fn normalEx(ctx: *Context, sel: usize) !void {
             std.log.info("Launching: {s}", .{exe_path});
 
             var proc = try std.process.spawn(ctx.io, .{
-                .argv = &.{exe_path},
+                .argv = &.{ "cage", "--", exe_path },
             });
             const term = try proc.wait(ctx.io);
 

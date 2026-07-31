@@ -31,7 +31,8 @@ pub fn build(b: *std.Build) void {
         .target = gh_target,
         .optimize = optimize,
         .linkage = .dynamic,
-        .opengl_version = .gl_2_1,
+        .linux_display_backend = .Wayland,
+        .opengl_version = .gles_2,
     });
 
     const gh_exe = addLauncher(b, gh_target, optimize, gh_raylib);
