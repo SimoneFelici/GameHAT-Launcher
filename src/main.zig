@@ -21,7 +21,7 @@ pub fn main(init: std.process.Init) anyerror!void {
 
     rl.setWindowFocused();
     rl.hideCursor();
-    rl.enableEventWaiting();
+    // rl.enableEventWaiting();
 
     const monitor = rl.getCurrentMonitor();
     const screenW = rl.getMonitorWidth(monitor);
@@ -33,6 +33,9 @@ pub fn main(init: std.process.Init) anyerror!void {
 
     var start: usize = 0;
     var selected: usize = 0;
+    if (rl.isGamepadAvailable(0)) {
+        std.log.info("Gamepad 0: {s}", .{rl.getGamepadName(0)});
+    }
     while (!rl.windowShouldClose()) {
         if (ctx.games.items.len > 0) {
             if (rl.isKeyPressed(.enter)) {
