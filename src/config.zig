@@ -20,14 +20,15 @@ pub const Config = struct {
 };
 
 pub fn load(ctx: *Context) void {
-    const contents = readFile(ctx) catch |err| {
+    var contents_buf: [2048]u8 = undefined;
+    const contents = readFile(ctx, &contents_buf) catch |err| {
         std.log.err("Config error {s}\n", .{@errorName(err)});
         return;
     };
     parse(ctx, contents);
 }
 
-fn readFile(ctx: *Context) ![]u8 {
+fn readFile(ctx: *Context, buf: []u8) ![]u8 {
     const config_dir = try known_folders.getPath(ctx.io, ctx.gpa, ctx.environ, .roaming_configuration) orelse
         return error.NoConfigDir;
     defer ctx.gpa.free(config_dir);
@@ -35,7 +36,7 @@ fn readFile(ctx: *Context) ![]u8 {
     const path = try std.fs.path.join(ctx.gpa, &.{ config_dir, "GameHAT-Launcher", "config.txt" });
     defer ctx.gpa.free(path);
 
-    return std.Io.Dir.cwd().readFile(ctx.io, path, &ctx.contents_buf);
+    return std.Io.Dir.cwd().readFile(ctx.io, path, buf);
 }
 
 fn parse(ctx: *Context, contents: []const u8) void {

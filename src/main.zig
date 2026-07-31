@@ -4,8 +4,6 @@ const Context = @import("context.zig").Context;
 
 pub fn main(init: std.process.Init) anyerror!void {
     const spacing: f32 = 5;
-    var select: usize = 0;
-    var start: usize = 0;
 
     var ctx: Context = .{
         .io = init.io,
@@ -17,8 +15,8 @@ pub fn main(init: std.process.Init) anyerror!void {
     try ctx.listGames();
     const config = &ctx.config;
 
-    rl.setConfigFlags(.{ .fullscreen_mode = true });
-    rl.initWindow(480, 320, "Game-Hat Launcher");
+    rl.setConfigFlags(.{ .fullscreen_mode = true, .window_resizable = true });
+    rl.initWindow(0, 0, "Game-Hat Launcher");
     defer rl.closeWindow();
 
     rl.setWindowFocused();
@@ -33,22 +31,30 @@ pub fn main(init: std.process.Init) anyerror!void {
     const font = try rl.getFontDefault();
     const font_size = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
 
+    var start: usize = 0;
+    var selected: usize = 0;
     while (!rl.windowShouldClose()) {
         if (ctx.games.items.len > 0) {
             if (rl.isKeyPressed(.enter)) {
-                std.log.info("Launched game: {s}", .{ctx.games.items[select].name});
+                rl.minimizeWindow();
+
+                ctx.launchGame(selected) catch |err| {
+                    std.log.err("launch failed: {s}", .{@errorName(err)});
+                };
+
+                rl.restoreWindow();
             }
             if (rl.isKeyDown(.down)) {
-                select = (select + 1) % ctx.games.items.len;
+                selected = (selected + 1) % ctx.games.items.len;
             }
             if (rl.isKeyDown(.up)) {
-                select = if (select == 0) ctx.games.items.len - 1 else select - 1;
+                selected = if (selected == 0) ctx.games.items.len - 1 else selected - 1;
             }
 
-            if (select < start) {
-                start = select;
-            } else if (select >= start + config.max_view) {
-                start = select - config.max_view + 1;
+            if (selected < start) {
+                start = selected;
+            } else if (selected >= start + config.max_view) {
+                start = selected - config.max_view + 1;
             }
         }
         const end = @min(start + config.max_view, ctx.games.items.len);
@@ -64,7 +70,7 @@ pub fn main(init: std.process.Init) anyerror!void {
                 .x = (screenWidth - size.x) / 2,
                 .y = @as(f32, @floatFromInt(i - start)) * (size.y + 5),
             };
-            const color = if (i == select) config.hg_color else config.txt_color;
+            const color = if (i == selected) config.hg_color else config.txt_color;
             rl.drawTextEx(font, game.name, pos, font_size, spacing, color);
         }
         rl.drawFPS(0, 0);

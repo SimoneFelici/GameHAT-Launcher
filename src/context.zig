@@ -7,7 +7,6 @@ pub const Context = struct {
     gpa: std.mem.Allocator,
     arena: std.mem.Allocator,
     environ: *const std.process.Environ.Map,
-    contents_buf: [2048]u8 = undefined,
     config: config.Config = .{},
     games: std.ArrayList(games.Game) = .empty,
 
@@ -17,5 +16,9 @@ pub const Context = struct {
 
     pub fn listGames(self: *Context) !void {
         try games.list(self);
+    }
+
+    pub fn launchGame(self: *Context, sel: usize) !void {
+        try games.launch(self, sel);
     }
 };

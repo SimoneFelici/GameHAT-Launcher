@@ -18,3 +18,58 @@ pub fn list(ctx: *Context) !void {
         try ctx.games.append(ctx.arena, .{ .name = name, .path = path });
     }
 }
+
+fn normalEx(ctx: *Context, sel: usize) !void {
+    const dir = try std.Io.Dir.openDirAbsolute(ctx.io, ctx.games.items[sel].path, .{ .iterate = true });
+    defer dir.close(ctx.io);
+
+    var walker = try dir.walk(ctx.gpa);
+    defer walker.deinit();
+
+    while (try walker.next(ctx.io)) |entry| {
+        if (entry.kind != .file) continue;
+        const stat = try dir.statFile(ctx.io, entry.basename, .{});
+
+        const mode = stat.permissions.toMode();
+        const is_executable = (mode & 0o111) != 0;
+
+        // TODO: ONCE GETS MERGED USE spawnPath
+        if (is_executable) {
+            const exe_path = try std.fs.path.join(ctx.gpa, &.{ ctx.games.items[sel].path, entry.path });
+            defer ctx.gpa.free(exe_path);
+
+            std.log.info("Launching: {s}", .{exe_path});
+
+            var proc = try std.process.spawn(ctx.io, .{
+                .argv = &.{exe_path},
+            });
+            const term = try proc.wait(ctx.io);
+
+            switch (term) {
+                .exited => |code| std.log.info("Exited with code {d}", .{code}),
+                else => std.log.warn("Terminated abnormally: {}", .{term}),
+            }
+            return;
+        }
+    }
+}
+
+pub fn launch(ctx: *Context, sel: usize) !void {
+    const game_folder = ctx.games.items[sel].path;
+    std.log.info("Launching game: {s}", .{game_folder});
+
+    const lopts_path = try std.fs.path.join(ctx.gpa, &.{ game_folder, ".launchopts" });
+    defer ctx.gpa.free(lopts_path);
+
+    var buf: [2048]u8 = undefined;
+    const contents = std.Io.Dir.cwd().readFile(ctx.io, lopts_path, &buf) catch |err| switch (err) {
+        error.FileNotFound => {
+            std.log.info(".launchopts not found, defaulting to normal exec", .{});
+            try normalEx(ctx, sel);
+            return;
+        },
+        else => return err,
+    };
+
+    _ = contents;
+}
