@@ -36,12 +36,12 @@ pub fn main(init: std.process.Init) anyerror!void {
     while (!rl.windowShouldClose()) {
         if (ctx.games.items.len > 0) {
             if (rl.isKeyPressed(.enter)) {
-                std.debug.print("{s}\n", .{ctx.games.items[select].name});
+                std.log.info("Launched game: {s}", .{ctx.games.items[select].name});
             }
-            if (rl.isKeyPressed(.down)) {
+            if (rl.isKeyDown(.down)) {
                 select = (select + 1) % ctx.games.items.len;
             }
-            if (rl.isKeyPressed(.up)) {
+            if (rl.isKeyDown(.up)) {
                 select = if (select == 0) ctx.games.items.len - 1 else select - 1;
             }
 
