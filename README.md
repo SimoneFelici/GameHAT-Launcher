@@ -30,12 +30,13 @@ fi
 You can get the latest binaries here
 
 ## Build from source
+Requires zig 0.16 and *some* of the following [system libraries](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
 
 ```bash
 git clone https://github.com/SimoneFelici/GameHAT-Launcher.git
 cd GameHAT-Launcher
 
-zig build -Doptimize=ReleaseSmall
+zig build
 ```
 
 ### Cross Building
