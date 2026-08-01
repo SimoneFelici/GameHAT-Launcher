@@ -47,7 +47,7 @@ fn normalEx(ctx: *Context, sel: usize) !void {
 
             switch (term) {
                 .exited => |code| std.log.info("Exited with code {d}", .{code}),
-                else => std.log.warn("Terminated abnormally: {}", .{term}),
+                else => std.log.err("Terminated abnormally: {}", .{term}),
             }
             return;
         }
@@ -79,16 +79,26 @@ pub fn launch(ctx: *Context, sel: usize) !void {
     var env = try ctx.environ.clone(ctx.gpa);
     defer env.deinit();
 
+    var exec_found = false;
+
     var lines = std.mem.splitScalar(u8, contents, '\n');
-    while (lines.next()) |line| {
+    while (lines.next()) |raw| {
+        const line = std.mem.trim(u8, raw, &std.ascii.whitespace);
         if (line.len == 0 or line[0] == '#') continue;
+
         const eq = std.mem.indexOfScalar(u8, line, '=') orelse continue;
         const key = std.mem.trim(u8, line[0..eq], &std.ascii.whitespace);
         const value = std.mem.trim(u8, line[eq + 1 ..], &std.ascii.whitespace);
 
-        if (std.mem.eql(u8, key, "cmd")) {
-            var parts = std.mem.tokenizeScalar(u8, value, ' ');
-            while (parts.next()) |part| try argv.append(ctx.gpa, part);
+        if (std.mem.eql(u8, key, "exec")) {
+            if (exec_found) {
+                std.log.warn("Duplicate exec in .launchopts, ignoring: {s}", .{value});
+                continue;
+            }
+            try argv.append(ctx.gpa, value);
+            exec_found = true;
+        } else if (std.mem.eql(u8, key, "arg")) {
+            try argv.append(ctx.gpa, value);
         } else if (std.mem.eql(u8, key, "env")) {
             const sep = std.mem.indexOfScalar(u8, value, '=') orelse continue;
             try env.put(
@@ -98,14 +108,15 @@ pub fn launch(ctx: *Context, sel: usize) !void {
         }
     }
 
-    if (argv.items.len <= 2) {
-        std.log.warn("no cmd in .launchopts", .{});
-        return error.NoCmdFound;
+    if (!exec_found) {
+        std.log.err("No exec in .launchopts", .{});
+        return error.NoExecFound;
     }
 
     var proc = try std.process.spawn(ctx.io, .{
         .argv = argv.items,
         .environ_map = &env,
+        .cwd = .{ .path = game_folder },
     });
     const term = try proc.wait(ctx.io);
     std.log.info("Game closed: {}", .{term});
