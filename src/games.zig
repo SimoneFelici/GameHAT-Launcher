@@ -28,7 +28,7 @@ fn normalEx(ctx: *Context, sel: usize) !void {
 
     while (try walker.next(ctx.io)) |entry| {
         if (entry.kind != .file) continue;
-        const stat = try dir.statFile(ctx.io, entry.basename, .{});
+        const stat = try dir.statFile(ctx.io, entry.path, .{});
 
         const mode = stat.permissions.toMode();
         const is_executable = (mode & 0o111) != 0;
@@ -42,6 +42,7 @@ fn normalEx(ctx: *Context, sel: usize) !void {
 
             var proc = try std.process.spawn(ctx.io, .{
                 .argv = &.{ "cage", "--", exe_path },
+                .cwd = .{ .path = ctx.games.items[sel].path },
             });
             const term = try proc.wait(ctx.io);
 
