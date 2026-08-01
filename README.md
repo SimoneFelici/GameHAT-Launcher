@@ -27,7 +27,7 @@ fi
 ```
 
 ## Install
-You can get the latest binaries here
+You can get the latest binaries [here](https://github.com/SimoneFelici/GameHAT-Launcher/releases/latest)
 
 ## Build from source
 Requires zig 0.16 and *some* of the following [system libraries](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
