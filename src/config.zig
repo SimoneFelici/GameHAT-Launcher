@@ -9,6 +9,7 @@ const DEFAULT_HG = rl.Color{ .r = 0xcb, .g = 0x4b, .b = 0x16, .a = 255 };
 const DEFAULT_GD = "/usr/local/games";
 const DEFAULT_MX = 5;
 const DEFAULT_SCALE = 10;
+const DEFAULT_SPACE = 5;
 
 pub const Config = struct {
     bg_color: rl.Color = DEFAULT_BG,
@@ -17,6 +18,7 @@ pub const Config = struct {
     games_dir: []const u8 = DEFAULT_GD,
     max_view: usize = DEFAULT_MX,
     text_scale: f32 = DEFAULT_SCALE,
+    text_spacing: f32 = DEFAULT_SPACE,
 };
 
 pub fn load(ctx: *Context) void {
@@ -40,7 +42,9 @@ fn readFile(ctx: *Context, buf: []u8) ![]u8 {
 }
 
 fn parse(ctx: *Context, contents: []const u8) void {
-    const Key = enum { bg_color, txt_color, hg_color, games_dir, max_view, text_scale };
+    const Key = enum { bg_color, txt_color, hg_color, games_dir, max_view, text_scale, text_spacing };
+
+    // Config fields
     const key_map = std.StaticStringMap(Key).initComptime(.{
         .{ "background_color", .bg_color },
         .{ "text_color", .txt_color },
@@ -48,6 +52,7 @@ fn parse(ctx: *Context, contents: []const u8) void {
         .{ "games_directory", .games_dir },
         .{ "max_viewable_items", .max_view },
         .{ "text_scale", .text_scale },
+        .{ "text_spacing", .text_spacing },
     });
 
     var lines = std.mem.splitScalar(u8, contents, '\n');
@@ -65,6 +70,7 @@ fn parse(ctx: *Context, contents: []const u8) void {
             .games_dir => setGamesDir(&ctx.config.games_dir, ctx.io, value),
             .max_view => ctx.config.max_view = parseMaxView(value),
             .text_scale => ctx.config.text_scale = parseTextScale(value),
+            .text_spacing => ctx.config.text_scale = parseTextScale(value),
         }
     }
 }
@@ -77,6 +83,7 @@ fn setGamesDir(games_dir: *[]const u8, io: std.Io, dir: []const u8) void {
     games_dir.* = dir;
 }
 
+// TODO: Maybe add RGB support
 fn parseHexColor(hex: []const u8, default: rl.Color) rl.Color {
     if (hex.len != 7 or hex[0] != '#') {
         std.log.err("Invalid hex code: '{s}'\n", .{hex});
