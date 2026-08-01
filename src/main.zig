@@ -33,7 +33,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     const screenWidth: f32 = @floatFromInt(rl.getScreenWidth());
     const screenHeight: f32 = @floatFromInt(rl.getScreenHeight());
     const font = try rl.getFontDefault();
-    const font_size: i32 = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
+    const font_size: f32 = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
 
     var prev_y: f32 = 0;
     var start: usize = 0;
@@ -41,7 +41,10 @@ pub fn main(init: std.process.Init) anyerror!void {
     var scroll_count: f32 = 0.0;
 
     while (!rl.windowShouldClose()) {
-        const axis_y = rl.getGamepadAxisMovement(0, .left_y);
+        var axis_y = rl.getGamepadAxisMovement(0, .left_y);
+        if (rl.isKeyDown(.down)) axis_y = 1;
+        if (rl.isKeyDown(.up)) axis_y = -1;
+
         const pad_down = axis_y == 1 and prev_y != 1;
         const pad_up = axis_y == -1 and prev_y != -1;
         prev_y = axis_y;
@@ -60,10 +63,10 @@ pub fn main(init: std.process.Init) anyerror!void {
                     std.log.err("launch failed: {s}", .{@errorName(err)});
                 };
             }
-            if (rl.isKeyPressedRepeat(.down) or pad_down) {
+            if (pad_down) {
                 selected = (selected + 1) % ctx.games.items.len;
             }
-            if (rl.isKeyPressedRepeat(.up) or pad_up) {
+            if (pad_up) {
                 selected = if (selected == 0) ctx.games.items.len - 1 else selected - 1;
             }
 

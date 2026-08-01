@@ -70,7 +70,7 @@ fn parse(ctx: *Context, contents: []const u8) void {
             .games_dir => setGamesDir(&ctx.config.games_dir, ctx.io, value),
             .max_view => ctx.config.max_view = parseMaxView(value),
             .text_scale => ctx.config.text_scale = parseTextScale(value),
-            .text_spacing => ctx.config.text_scale = parseTextScale(value),
+            .text_spacing => ctx.config.text_spacing = parseTextSpace(value),
         }
     }
 }
@@ -103,4 +103,9 @@ fn parseMaxView(num: []const u8) usize {
 fn parseTextScale(num: []const u8) f32 {
     const val = std.fmt.parseFloat(f32, num) catch return DEFAULT_SCALE;
     return if (val > 0) val else DEFAULT_SCALE;
+}
+
+fn parseTextSpace(num: []const u8) f32 {
+    const val = std.fmt.parseFloat(f32, num) catch return DEFAULT_SPACE;
+    return if (val > 0) val else DEFAULT_SPACE;
 }
