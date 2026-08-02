@@ -5,3 +5,5 @@ zig-pkg/
 
 out/*
 !out/.gitkeep
+
+sysroot-gamehat/
