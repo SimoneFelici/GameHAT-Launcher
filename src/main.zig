@@ -28,7 +28,6 @@ pub fn main(init: std.process.Init) anyerror!void {
     rl.hideCursor();
     rl.setTargetFPS(15);
     _ = rl.setGamepadMappings(gamehat_mapping);
-    // rl.enableEventWaiting();
 
     const screenWidth: f32 = @floatFromInt(rl.getScreenWidth());
     const screenHeight: f32 = @floatFromInt(rl.getScreenHeight());
@@ -92,6 +91,5 @@ pub fn main(init: std.process.Init) anyerror!void {
             const color = if (i == selected) config.hg_color else config.txt_color;
             rl.drawTextEx(font, game.name, pos, font_size, config.text_spacing, color);
         }
-        // rl.drawFPS(0, 0);
     }
 }
