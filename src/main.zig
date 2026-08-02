@@ -39,6 +39,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     var selected: usize = 0;
     var scroll_count: f32 = 0.0;
 
+    // MAIN LOOP
     while (!rl.windowShouldClose()) {
         var axis_y = rl.getGamepadAxisMovement(0, .left_y);
         if (rl.isKeyDown(.down)) axis_y = 1;

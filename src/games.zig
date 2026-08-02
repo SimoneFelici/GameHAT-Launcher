@@ -7,6 +7,7 @@ pub const Game = struct {
 };
 
 pub fn list(ctx: *Context) !void {
+    ctx.games.clearRetainingCapacity();
     const dir = try std.Io.Dir.openDirAbsolute(ctx.io, ctx.config.games_dir, .{ .iterate = true });
     defer dir.close(ctx.io);
 
