@@ -57,6 +57,14 @@ pub fn main(init: std.process.Init) anyerror!void {
             scroll_count = 0;
         }
 
+        // TODO: CHOOSE A GAMPAD BUTTON
+        if (rl.isKeyPressed(.r)) {
+            start = 0;
+            selected = 0;
+            ctx.listGames() catch |err| {
+                std.log.err("game list reload failed: {s}", .{@errorName(err)});
+            };
+        }
         if (ctx.games.items.len > 0) {
             if (rl.isKeyPressed(.enter) or rl.isGamepadButtonPressed(0, .right_face_down)) {
                 ctx.launchGame(selected) catch |err| {
