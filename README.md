@@ -30,7 +30,7 @@ fi
 You can get the latest binaries [here](https://github.com/SimoneFelici/GameHAT-Launcher/releases/latest)
 
 ## Build from source
-Requires zig 0.16 and *some* of the following [system libraries](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
+Requires zig 0.17 and *some* of the following [system libraries](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
 
 ```bash
 git clone https://github.com/SimoneFelici/GameHAT-Launcher.git
@@ -67,32 +67,39 @@ sudo ldconfig
 You only need to copy the .so and launch ldconfig for the first time, or if the build.zig changes the raylib build
 
 ## Configuration
-You can configure the GameHAT-Launcher by creating a config.txt file in `~/.config/GameHAT-Launcher`
+You can configure the GameHAT-Launcher by creating a `config.zon` file in `~/.config/GameHAT-Launcher`
 Here is the default configuration:
 
 ```bash
-# Only Hex code are currently supported, I plan to support RGB in the near future!
-background_color = #002b36
-text_color = #839496
-highlight_color = #cb4b16
+.{
+    // You can specify either hex or rgb colors!!
+    .background_color = .{ .hex = "#001e27" },
+    .text_color = .{ .rgb = .{ .r = 0, .g = 0, .b = 255 } },
+    .highlight_color = .{ .hex = "#f34b00" },
 
-# Directory where you store your games, the games needs to be in a folder
-games_directory = /usr/local/games
-# How many items are viewable in the screen
-max_viewable_items = 5
+    // Folder where you store your games, the games needs to be in a folder
+    .games_folder = "/usr/local/games",
 
-# Text dimensions smaller value = bigger text :)
-text_scale = 10
-# Spacing between characters
-text_spacing = 5
+    // How many items are viewable in the screen
+    .max_viewable_items = 5,
+
+    // Text dimensions, smaller value = bigger text :)
+    .text_scale = 10,
+
+    // Spacing between characters
+    .text_spacing = 5,
+}
 ```
 
-You can also customize how the game will be launched by creating a `.launchopts` file in one of your game directory.
+You can also customize how the game will be launched by creating a `.launchopts.zon` file in one of your game directory.
 For example:
 
 ```bash
-exec = /usr/local/games/so_long/so_long
-arg = maps/map.txt
-arg = --fullscreen
-env = TEST=test
+.{
+    .exec = "/usr/local/games/so_long/so_long",
+    .args = .{ "maps/map.txt", "--fullscreen" },
+    .env = .{
+        .{ "TEST", "test" },
+    },
+}
 ```
