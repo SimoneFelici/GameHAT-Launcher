@@ -6,15 +6,21 @@ pub const Game = struct {
     path: [:0]const u8,
 };
 
+const LaunchOpts = struct {
+    exec: []const u8,
+    args: []const []const u8 = &.{},
+    env: []const [2][]const u8 = &.{},
+};
+
 pub fn list(ctx: *Context) !void {
     ctx.games.clearRetainingCapacity();
-    const dir = try std.Io.Dir.openDirAbsolute(ctx.io, ctx.config.games_dir, .{ .iterate = true });
+    const dir = try std.Io.Dir.openDirAbsolute(ctx.io, ctx.config.games_folder, .{ .iterate = true });
     defer dir.close(ctx.io);
 
     var it = dir.iterate();
     while (try it.next(ctx.io)) |entry| {
         if (entry.kind != .directory) continue;
-        const path = try std.fs.path.joinZ(ctx.arena, &.{ ctx.config.games_dir, entry.name });
+        const path = try std.fs.path.joinZ(ctx.arena, &.{ ctx.config.games_folder, entry.name });
         const name = path[path.len - entry.name.len ..];
         try ctx.games.append(ctx.arena, .{ .name = name, .path = path });
     }
@@ -60,60 +66,41 @@ pub fn launch(ctx: *Context, sel: usize) !void {
     const game_folder = ctx.games.items[sel].path;
     std.log.info("Launching game in directory: {s}", .{game_folder});
 
-    const lopts_path = try std.fs.path.join(ctx.gpa, &.{ game_folder, ".launchopts" });
+    const lopts_path = try std.fs.path.join(ctx.gpa, &.{ game_folder, ".launchopts.zon" });
     defer ctx.gpa.free(lopts_path);
 
     var buf: [2048]u8 = undefined;
-    const contents = std.Io.Dir.cwd().readFile(ctx.io, lopts_path, &buf) catch |err| switch (err) {
+    const data = std.Io.Dir.cwd().readFile(ctx.io, lopts_path, buf[0 .. buf.len - 1]) catch |err| switch (err) {
         error.FileNotFound => {
-            std.log.info(".launchopts not found, defaulting to normal execution", .{});
-            try normalEx(ctx, sel);
-            return;
+            std.log.info(".launchopts.zon not found, defaulting to normal execution", .{});
+            return normalEx(ctx, sel);
         },
         else => return err,
     };
+    buf[data.len] = 0;
+
+    var arena_state: std.heap.ArenaAllocator = .init(ctx.gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    var diag: std.zon.parse.Diagnostics = undefined;
+    const opts = std.zon.parse.fromSlice(LaunchOpts, .{
+        .gpa = ctx.gpa,
+        .arena = arena,
+        .source = buf[0..data.len :0],
+        .diagnostics = &diag,
+    }) catch |err| {
+        if (err == error.ParseZon) diag.log(lopts_path);
+        return err;
+    };
 
     var argv: std.ArrayList([]const u8) = .empty;
-    defer argv.deinit(ctx.gpa);
-    try argv.append(ctx.gpa, "cage");
-    try argv.append(ctx.gpa, "--");
+    try argv.appendSlice(arena, &.{ "cage", "--", opts.exec });
+    try argv.appendSlice(arena, opts.args);
 
     var env = try ctx.environ.clone(ctx.gpa);
     defer env.deinit();
-
-    var exec_found = false;
-
-    var lines = std.mem.splitScalar(u8, contents, '\n');
-    while (lines.next()) |raw| {
-        const line = std.mem.trim(u8, raw, &std.ascii.whitespace);
-        if (line.len == 0 or line[0] == '#') continue;
-
-        const eq = std.mem.indexOfScalar(u8, line, '=') orelse continue;
-        const key = std.mem.trim(u8, line[0..eq], &std.ascii.whitespace);
-        const value = std.mem.trim(u8, line[eq + 1 ..], &std.ascii.whitespace);
-
-        if (std.mem.eql(u8, key, "exec")) {
-            if (exec_found) {
-                std.log.warn("Duplicate exec in .launchopts, ignoring: {s}", .{value});
-                continue;
-            }
-            try argv.append(ctx.gpa, value);
-            exec_found = true;
-        } else if (std.mem.eql(u8, key, "arg")) {
-            try argv.append(ctx.gpa, value);
-        } else if (std.mem.eql(u8, key, "env")) {
-            const sep = std.mem.indexOfScalar(u8, value, '=') orelse continue;
-            try env.put(
-                std.mem.trim(u8, value[0..sep], &std.ascii.whitespace),
-                std.mem.trim(u8, value[sep + 1 ..], &std.ascii.whitespace),
-            );
-        }
-    }
-
-    if (!exec_found) {
-        std.log.err("No exec in .launchopts", .{});
-        return error.NoExecFound;
-    }
+    for (opts.env) |envs| try env.put(envs[0], envs[1]);
 
     var proc = try std.process.spawn(ctx.io, .{
         .argv = argv.items,

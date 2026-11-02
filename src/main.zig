@@ -34,6 +34,10 @@ pub fn main(init: std.process.Init) anyerror!void {
     const font = try rl.getFontDefault();
     const font_size: f32 = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
 
+    const bg_color = config.background_color.translate();
+    const txt_color = config.text_color.translate();
+    const hg_color = config.highlight_color.translate();
+
     var prev_y: f32 = 0;
     var start: usize = 0;
     var selected: usize = 0;
@@ -80,15 +84,15 @@ pub fn main(init: std.process.Init) anyerror!void {
 
             if (selected < start) {
                 start = selected;
-            } else if (selected >= start + config.max_view) {
-                start = selected - config.max_view + 1;
+            } else if (selected >= start + config.max_viewable_items) {
+                start = selected - config.max_viewable_items + 1;
             }
         }
-        const end = @min(start + config.max_view, ctx.games.items.len);
+        const end = @min(start + config.max_viewable_items, ctx.games.items.len);
 
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(config.bg_color);
+        rl.clearBackground(bg_color);
 
         const visible = ctx.games.items[start..end];
         for (visible, start..) |game, i| {
@@ -97,7 +101,7 @@ pub fn main(init: std.process.Init) anyerror!void {
                 .x = (screenWidth - size.x) / 2,
                 .y = @as(f32, @floatFromInt(i - start)) * (size.y + 5),
             };
-            const color = if (i == selected) config.hg_color else config.txt_color;
+            const color = if (i == selected) hg_color else txt_color;
             rl.drawTextEx(font, game.name, pos, font_size, config.text_spacing, color);
         }
     }
