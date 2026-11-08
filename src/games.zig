@@ -40,7 +40,6 @@ fn normalEx(ctx: *Context, sel: usize) !void {
         const mode = stat.permissions.toMode();
         const is_executable = (mode & 0o111) != 0;
 
-        // TODO: ONCE GETS MERGED USE spawnPath
         if (is_executable) {
             const exe_path = try std.fs.path.join(ctx.gpa, &.{ ctx.games.items[sel].path, entry.path });
             defer ctx.gpa.free(exe_path);

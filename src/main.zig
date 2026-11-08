@@ -34,9 +34,9 @@ pub fn main(init: std.process.Init) anyerror!void {
     const font = try rl.getFontDefault();
     const font_size: f32 = @divTrunc(@min(screenWidth, screenHeight), config.text_scale);
 
-    const bg_color = config.background_color.translate();
-    const txt_color = config.text_color.translate();
-    const hg_color = config.highlight_color.translate();
+    const bg_color = config.background_color;
+    const txt_color = config.text_color;
+    const hg_color = config.highlight_color;
 
     var prev_y: f32 = 0;
     var start: usize = 0;

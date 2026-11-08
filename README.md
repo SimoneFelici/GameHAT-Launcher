@@ -68,14 +68,14 @@ You only need to copy the .so and launch ldconfig for the first time, or if the 
 
 ## Configuration
 You can configure the GameHAT-Launcher by creating a `config.zon` file in `~/.config/GameHAT-Launcher`
-Here is the default configuration:
+This is the default configuration:
 
 ```bash
 .{
-    // You can specify either hex or rgb colors!!
-    .background_color = .{ .hex = "#001e27" },
-    .text_color = .{ .rgb = .{ .r = 0, .g = 0, .b = 255 } },
-    .highlight_color = .{ .hex = "#f34b00" },
+    // Only rgb colors are supported!
+    .background_color = .{ .r = 0, .g = 30, .b = 39, .a = 255 },
+    .text_color = .{ .r = 156, .g = 194, .b = 195, .a = 255 },
+    .highlight_color = .{ .r = 245, .g = 75, .b = 0, .a = 255 },
 
     // Folder where you store your games, the games needs to be in a folder
     .games_folder = "/usr/local/games",

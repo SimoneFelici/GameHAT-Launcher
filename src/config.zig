@@ -4,36 +4,13 @@ const known_folders = @import("known-folders");
 const Context = @import("context.zig").Context;
 
 pub const Config = struct {
-    background_color: Color = .{ .rgb = .{ .r = 0, .g = 30, .b = 39 } },
-    text_color: Color = .{ .rgb = .{ .r = 156, .g = 194, .b = 195 } },
-    highlight_color: Color = .{ .rgb = .{ .r = 245, .g = 75, .b = 0 } },
+    background_color: rl.Color = .{ .r = 0, .g = 30, .b = 39, .a = 255 },
+    text_color: rl.Color = .{ .r = 156, .g = 194, .b = 195, .a = 255 },
+    highlight_color: rl.Color = .{ .r = 245, .g = 75, .b = 0, .a = 255 },
     games_folder: []const u8 = "/usr/local/games",
     max_viewable_items: usize = 5,
     text_scale: f32 = 10,
     text_spacing: f32 = 5,
-};
-
-pub const Color = union(enum) {
-    hex: []const u8,
-    rgb: struct { r: u8, g: u8, b: u8, a: u8 = 255 },
-
-    pub fn translate(self: Color) rl.Color {
-        return switch (self) {
-            .rgb => |c| return .{ .r = c.r, .g = c.g, .b = c.b, .a = c.a },
-            .hex => |h| return parseHex(h) catch
-                std.process.fatal("Invalid hex code: '{s}'", .{h}),
-        };
-    }
-
-    fn parseHex(h: []const u8) !rl.Color {
-        if (h.len != 7 or h[0] != '#') return error.InvalidHex;
-        return .{
-            .r = try std.fmt.parseInt(u8, h[1..3], 16),
-            .g = try std.fmt.parseInt(u8, h[3..5], 16),
-            .b = try std.fmt.parseInt(u8, h[5..7], 16),
-            .a = 255,
-        };
-    }
 };
 
 pub fn load(ctx: *Context) void {
@@ -44,7 +21,6 @@ pub fn load(ctx: *Context) void {
     };
 
     var diag: std.zon.parse.Diagnostics = undefined;
-
     ctx.config = std.zon.parse.fromSlice(Config, .{
         .gpa = ctx.gpa,
         .arena = ctx.arena,
